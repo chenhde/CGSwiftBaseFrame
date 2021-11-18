@@ -18,7 +18,7 @@ Pod::Spec.new do |spec|
 
   spec.description  = <<-DESC
 			
-			一键导入基础框架库，路由跳转		
+			一键导入基础框架库，路由跳转，网络请求等,快速搭建，快速开发		
 
                    DESC
 
