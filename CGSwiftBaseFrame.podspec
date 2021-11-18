@@ -13,7 +13,7 @@ Pod::Spec.new do |spec|
   #  These will help people to find your library, and whilst it
 
   spec.name         = "CGSwiftBaseFrame"
-  spec.version      = "0.0.1"
+  spec.version      = "0.0.2"
   spec.summary      = "一键导入基础框架库，路由跳转"
 
   spec.description  = <<-DESC
