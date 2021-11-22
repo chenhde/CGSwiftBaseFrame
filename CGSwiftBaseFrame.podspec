@@ -38,7 +38,19 @@ Pod::Spec.new do |spec|
   spec.source       = { :git => "https://github.com/chenhde/CGSwiftBaseFrame.git", :tag => "#{spec.version}" }
 
 
-  spec.source_files  =  'CGSwiftBaseFrame/Classes/**/*'
+#  spec.source_files  =  'CGSwiftBaseFrame/Classes/**/*'
+
+  #Router
+  spec.subspec 'Router' do |srt|
+    
+    srt.source_files = "CGSwiftBaseFrame/Router/**/*"
+    srt.dependency 'URLNavigator'
+    srt.dependency 'Runtime'
+    srt.dependency 'KakaJSON'
+    
+    end#Router
+
+
  
 
 
