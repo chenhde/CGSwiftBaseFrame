@@ -39,7 +39,8 @@ Pod::Spec.new do |spec|
 
 
 #  spec.source_files  =  'CGSwiftBaseFrame/Classes/**/*'
-
+  
+  ##路由跳转##
   #Router
   spec.subspec 'Router' do |srt|
     
@@ -50,8 +51,17 @@ Pod::Spec.new do |spec|
     
     end#Router
 
+  ##网络请求##
+  #Network
+  spec.subspec 'Network' do |snt|
+    
+    snt.source_files = "CGSwiftBaseFrame/Network/**/*"
+    snt.dependency 'Moya/RxSwift'
+    snt.dependency 'RxCocoa'
 
- 
+    end#Network
+  
+  
 
 
 end
