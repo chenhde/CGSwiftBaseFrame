@@ -11,6 +11,8 @@ import SafariServices
 import URLNavigator
 @_exported import KakaJSON
 
+public typealias RouterParams = [String: Any?]
+
 public let AppNavigator = Navigator()
 
 public enum URLGenerator {
@@ -33,14 +35,33 @@ public enum URLGenerator {
 
 public extension Navigator {
     @discardableResult
-    func push(_ url: URLGenerator, params: [String: Any]? = nil) -> UIViewController? {
-    
+    func push(_ url: URLGenerator, params: RouterParams? = nil) -> UIViewController? {
         push(url.hostUrl(), context: params)
     }
 
     @discardableResult
-    func present(_ url: URLGenerator, params: [String: Any]? = nil) -> UIViewController? {
-        present(url.hostUrl(), context: params)
+    func present(_ url: URLGenerator, params: RouterParams? = nil, wrap: UINavigationController.Type? = nil, modalStyle: UIModalPresentationStyle? = nil) -> UIViewController? {
+        if let modalStyle = modalStyle {
+            guard let vc = controller(for: url, params: params, wrap: wrap) else {
+                return nil
+            }
+            vc.modalPresentationStyle = modalStyle
+            UIViewController.topMost?.present(vc, animated: true, completion: nil)
+            return vc
+        } else {
+            return present(url.hostUrl(), context: params)
+        }
+    }
+    @discardableResult
+    func controller(for url: URLGenerator, params: RouterParams? = nil, wrap: UINavigationController.Type? = nil) -> UIViewController? {
+        if let wrap = wrap {
+            guard let vc = viewController(for: url.hostUrl(), context: params) else {
+                return nil
+            }
+            return (vc is UINavigationController) ? vc : wrap.init(rootViewController: vc)
+        } else {
+            return viewController(for: url.hostUrl(), context: params)
+        }
     }
 }
 
@@ -77,6 +98,8 @@ public struct RouterMap: Convertible {
                 var controller = UIViewController()
                 if let identify = model.identify, let storyboard = model.storyboard {
                     controller = UIStoryboard(name: storyboard, bundle: bundle).instantiateViewController(withIdentifier: identify)
+                } else if let storyboard = model.storyboard {
+                    controller = UIStoryboard(name: storyboard, bundle: bundle).instantiateInitialViewController()!
                 } else if let xib = model.xib {
                     /// 创建xib的控制器
                     controller = clss.init(nibName: xib, bundle: bundle)
@@ -85,16 +108,25 @@ public struct RouterMap: Convertible {
                     controller = clss.init()
                 }
                 /// 参数赋值
-                if let params = content as? [String: Any] {
-                    /// 获取类信息
-                    guard let info = try? typeInfo(of: type(of: controller)) else {
-                        return controller
-                    }
-                    /// 类属性赋值
-                    info.properties.forEach { property in
-                        if let value = params[property.name] {
+                if let params = content as? RouterParams {
+                    if model.className.contains(".") { /// Swift类的参数赋值
+                        /// 获取类信息
+                        guard let info = try? typeInfo(of: type(of: controller)) else {
+                            return controller
+                        }
+                        /// 类属性赋值
+                        info.properties.forEach { property in
+                            guard let value = params[property.name] else { return }
+                            /// 防止字典里的value为nil
+                            guard !((value as? AnyObject)?.isKind(of: NSNull.self) ?? false) else { return }
                             do {
                                 try controller.setValue(value, forKey: property.name)
+                            } catch {}
+                        }
+                    } else { /// OC 类的参数赋值
+                        params.forEach { key, value in
+                            do {
+                                try controller.setValue(value, forKey: key)
                             } catch {}
                         }
                     }
